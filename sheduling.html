@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Homepage • CHI 2020</title>
+    
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+<!--    https://www.geeksforgeeks.org/bootstrap-4-introduction/-->
+    <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.18.0/dist/bootstrap-table.min.css">
+<!--    https://bootstrap-table.com/docs/getting-started/download/-->
+    <link rel="stylesheet" href="scheduling.css">
+    
+</head>
+<body>
+    <div id="Content">
+        <div class="title">
+            <h1> CHI 2020 </h1>
+        </div>
+        <div class="dateOptions">
+            <h5>Choose a Day</h5>
+            <select id="dateChosen" onload="" onchange="timePreference()"></select>
+        </div>
+        <div class="timeOptions">
+            <h5>Choose a Time</h5>
+            <select id="timeChosen">
+                <option value="0">Select All</option>
+            </select>
+        </div>
+        <br />
+        
+        <div id="filterOptions">
+             <div class="radio">
+              <label><input type="radio" name="optradio" value="0"> Display Only Paper Sessions</label>
+            </div>
+            <div class="radio">
+              <label><input type="radio" name="optradio" value="1"> Display Every Session Except Paper Sessions</label>
+            </div>
+            <div class="radio disabled">
+              <label><input type="radio" name="optradio" value="2" checked> Display Every Session</label>
+            </div> 
+        </div>
+        
+        <div class="submitButton">
+            <button type="submit" id="submitButton" onclick="jsonInfo()">
+                Search    
+            </button>
+        </div>
+    
+        <div class="buttonInfo">
+            <button onclick="ShowAdditionalInformation()">
+                Additional Information
+            </button>
+        </div>
+    </div>  
+    <div id="output">
+        <table id="dataTable" data-toggle="table" class="table">
+          <thead>
+            <tr>
+                <th data-field="title">Title</th>
+                <th data-field="time">Time</th>
+                <th data-field="room">Room</th>
+                <th data-field="type">Type</th>
+                <th data-field="submissiontitle">Submission Title</th>
+                <th data-field="url">URL</th>
+            </tr>
+          </thead>
+        </table>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+    <!--    https://www.geeksforgeeks.org/bootstrap-4-introduction/-->
+    <script src="https://unpkg.com/bootstrap-table@1.18.0/dist/bootstrap-table.min.js"></script>
+    <!--    https://bootstrap-table.com/docs/getting-started/download/-->
+<script> 
+
+var xmlhttp = new XMLHttpRequest();
+var url = "scheduling.json";
+var parsedJSON;
+    
+xmlhttp.onreadystatechange = function() {
+    if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+        parsedJSON = JSON.parse(xmlhttp.responseText);
+        
+        datePreference();
+        timePreference();
+
+    }
+};
+
+xmlhttp.open("GET", url, true);
+xmlhttp.send();
+    
+//Hide output on page load - https://www.w3schools.com/howto/howto_js_toggle_hide_show.asp
+document.getElementById("output").style.display = "none";
+    
+function datePreference() {
+    
+    const range = parsedJSON.length;
+    for (var i = 0; i < range; i++) {
+        var dayIdentity = parsedJSON[i].date.split("-")[2];
+        var daySplit = parsedJSON[i].day;
+        var content = '<option value ="' + daySplit + " " + dayIdentity + 'th April">';
+        content += daySplit + " " + dayIdentity + "th April</option>";
+
+        var o = new Option(daySplit + " " + dayIdentity + "th April", parsedJSON[i].date);
+//      jQuery "o" to set content - https://www.w3schools.com/jquery/html_html.asp
+        $(o).html(content);
+//      Append to push it into the select box - https://www.w3schools.com/jquery/html_append.asp
+        $("#dateChosen").append(o);
+    }
+}
+    
+function timePreference() {
+//  Removing all time slots - https://www.w3schools.com/jquery/jquery_dom_remove.asp
+    $("#timeChosen").find("option").not(":first").remove();
+//  Look for every option for date chosen - https://www.w3schools.com/jquery/traversing_find.asp
+    const myDay = $("#dateChosen").find(":selected").val();
+    var slots = [];
+    
+    parsedJSON.forEach(SessionDay => {
+        if(SessionDay.date == myDay) {
+           for (var key in SessionDay.slots){
+               let currentSession = SessionDay.slots[key];
+               if(currentSession.sessions.length >= 1) {
+                  slots.push(currentSession.time); 
+               } 
+            } 
+        }
+    });
+    
+    var exclusive = Array.from(new Set(slots));
+    for (var t = 0; t < exclusive.length; t++){
+        var o = new Option(exclusive.sort()[t], exclusive.sort()[t]);
+//      jQuery to set time and sort it
+        $(o).html(exclusive.sort()[t]);
+//      Append to push it into the select box - https://www.w3schools.com/jquery/html_append.asp
+        $("#timeChosen").append(o);
+    }
+}
+
+function jsonInfo(){
+    //  Let variables = Day, Time & radio buttons. -https://www.w3schools.com/jquery/html_val.asp#:~:text=The%20val()%20method%20returns,of%20the%20FIRST%20matched%20element.
+    const myDay = $("#dateChosen").find(":selected").val();
+    const myTimeSlot = $("#timeChosen").find(":selected").val();
+    const currentFilter = $("#filterOptions input:radio:checked").val();
+
+    var foundTimeSlots = [];
+    parsedJSON.forEach(SessionDay => {
+        if(SessionDay.date == myDay) {
+            for(var key in SessionDay.slots) {
+                if(myTimeSlot != "0")
+                {
+                    if(myTimeSlot == SessionDay.slots[key].time) {
+                        foundTimeSlots.push(SessionDay.slots[key]);
+                    }
+                } 
+                else
+                    foundTimeSlots.push(SessionDay.slots[key]);
+            }
+        } 
+    });
+    
+
+
+    var foundSessions = [];
+    if(foundTimeSlots.length >= 1)
+    {
+        foundTimeSlots.forEach(TimeSlot => {
+            TimeSlot.sessions.forEach(session => {
+                var newSession = null;
+                if(currentFilter == 0) {
+                    if(session.type == "paper")
+                        newSession = {"title": session.title, "time": session.time, "room": session.room, "type": session.type, "submissiontitle": "", "url": ""};
+                } else if (currentFilter == 1) {
+                    if(session.type != "paper")
+                        newSession = {"title": session.title, "time": session.time, "room": session.room, "type": session.type, "submissiontitle": "", "url": ""};
+                } else {
+
+                    newSession = {"title": session.title, "time": session.time, "room": session.room, "type": session.type, "submissiontitle": "", "url": ""};
+                }
+
+                if(session.submissions.length >= 1 && newSession != null) {
+                    newSession.submissiontitle = session.submissions[0].title;
+                    newSession.url = `<a href="${session.submissions[0].doiUrl}">${session.submissions[0].doiUrl}</a>`;
+                }
+
+                if(newSession != null)
+                    foundSessions.push(newSession);
+            });
+        })
+    }
+
+    
+    
+    //  Making the table visable 
+    document.getElementById("output").style.display = "block";
+    //  Loading the data into the bootstrap table - https://www.geeksforgeeks.org/how-to-load-data-from-json-into-a-bootstrap-table/
+    $("#dataTable").bootstrapTable('load', foundSessions);
+    	// Hiding the column until the Additional Info button is clicked - https://stackoverflow.com/questions/41446362/hide-columns-in-bootstrap-table-at-startup
+    $("#dataTable").bootstrapTable('hideColumn', 'submissiontitle');
+    $("#dataTable").bootstrapTable('hideColumn', 'url');
+}
+    var showAdditionalInfo = false;
+    // Hiding/Showing the columns when the the Additional Info button is clicked. Allows button to be toggled on/off.
+    function ShowAdditionalInformation() {
+        if(showAdditionalInfo == false) {
+            $("#dataTable").bootstrapTable('hideColumn', 'submissiontitle');
+            $("#dataTable").bootstrapTable('hideColumn', 'url');
+            showAdditionalInfo = true;
+        }
+        else 
+        {
+            $("#dataTable").bootstrapTable('showColumn', 'submissiontitle');
+            $("#dataTable").bootstrapTable('showColumn', 'url');
+            showAdditionalInfo = false;
+        }
+    }
+
+</script>
+</body>
+</html>

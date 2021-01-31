@@ -1,0 +1,80 @@
+#Content {
+    background-image: url(Website-Banner-Overlay-1.webp);
+    height: 43vh;
+    background-size:contain;
+    background-position:center;
+}
+
+body {
+  background-color: #dcdcdc;
+}
+
+h1 {
+    font-family:inherit;
+    font-weight: 600;
+    text-decoration: underline;
+    color: #c90a33;
+    text-align: center;
+    font-size: 500%;
+    letter-spacing: 3px;
+}
+
+.dateOptions {
+    text-align: center;
+    margin: 25px
+}
+
+.timeOptions {
+    text-align: center;
+    margin-top: 25px
+    
+}
+
+#filterOptions {
+    text-align: center;
+}
+
+.submitButton {
+    text-align: center;
+    margin-top: 15px;
+}
+
+.buttonInfo {
+    text-align: right;
+    
+}
+
+#dataTable {
+    border-collapse: collapse;
+    font-size: 0.9em;
+    min-width: 400px;
+    border-radius: 5px 5px 0 0;
+    overflow: hidden;
+}
+
+#dataTable thead tr {
+    background-color: #c90a33;
+    color: #ffffff;
+    text-align: left;
+    font-weight: bold;
+}
+
+#dataTable th,
+#dataTable td {
+    padding: 12px 15px;
+}
+
+#dataTable tbody tr {
+    border-bottom: 1px solid #c90a33;
+}
+
+#dataTable tbody tr:nth-of-type(even) {
+    background-color: #ffffff
+}
+
+#dataTable tbody tr:last-of-type {
+    border-bottom: 2px solid #00990f;
+}
+
+/*Styling*/
+/*https://www.youtube.com/watch?v=biI9OFH6Nmg*/
